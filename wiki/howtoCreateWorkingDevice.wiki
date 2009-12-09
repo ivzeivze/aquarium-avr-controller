@@ -4,8 +4,9 @@
 
 This page is supposed to explain how one should use information, this project offers, to create a real device. 
 
+= Steps =
 
-= Look at how it has been done =
+== Look at how it has been done ==
 
 There exists a working instance of the device, created in year 2009. The device 
 has been implemented in technics, described as "in solder this, connect with a wire to that, connect again, solder in that small thing, ...., find yourself in a pile of wires".
@@ -16,4 +17,18 @@ However, it works. The only trouble has been screening the sensetive digital par
  * Aquarium tube lamp, starting itself with a discharge
 In that particular case, the problems seem to have been solved with shielding sensetive part of the device (everything, except relays and power supply) with 2-4 layers of household aluminium foil.
 
-The photographies of the device can be seen in SVN trunk in photos/ directory http://code.google.com/p/aquarium-avr-controller/source/browse/#svn/trunk/photos.
+The photographies of the device can be seen in SVN trunk in photos/ directory: http://code.google.com/p/aquarium-avr-controller/source/browse/#svn/trunk/photos.
+
+== Choose hardware ==
+One, willing to construct the device, apart from basic elements (resistors, capacitors,...) would need:
+ * ATMega16L microcontroller. Note the letter L - it means low voltage. This μ is able to operate over 2.7..5.5 V diapason.
+ * DS1621 thermometer chip.
+ * WH0802A-YGH-CT - LCD display. This one's codepage holds Cyrrilics, Latin and some strange symbols. I believe, that such device, localised for other languages, would have it's Latin codepage part overlapping with this one.
+ * 5 V power adapter, strong enough to give current to relays.
+ * 3 electromagnetic relays. The scheme may be, of cause, modified so that to replace electromagnetic (power-inefficient!) relays with optoelectronics.
+ * Some 2N7002 mosfet transistors
+ * Some BAT54C Schottky diodes (this comes in pairs in small SMD packs, so you may consider choosing something else)
+ * 32768 Hz clock resonator with 3-30 pf variable capacitor
+ * 5v self-beeping beeper (beeps on constant voltage)
+Everything, that exists on schemas, but is not mentioned here, is considered to be "basic" :P.
+ 
