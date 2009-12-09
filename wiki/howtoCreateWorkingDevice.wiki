@@ -5,9 +5,17 @@
 This page is supposed to explain how one should use information, this project offers, to create a real device. 
 
 
-= Details =
+= Look at how it has been done =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+There exists a working instance of the device, created in year 2009. The device 
+has been implemented in technics, described as "in solder this, connect with a wire to that, connect again, solder in that small thing, ...., find yourself in a pile of wires".
+
+However, it works. The only trouble has been screening the sensetive digital part of the device from electromagnetic surges. Without proper protection, there have been problems with:
+ * GSM mobile phone, sending data near
+ * house refridgerator, starting to operate
+ * Aquarium tube lamp, starting itself with a discharge
+In that particular case, the problems seem to have been solved with shielding sensetive part of the device (everything, except relays and power supply) with 2-4 layers of household aluminium foil.
+
+The photographs of the device can be seen in main repository.
+
+
