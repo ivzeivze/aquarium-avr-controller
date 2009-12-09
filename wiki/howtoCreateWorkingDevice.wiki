@@ -12,10 +12,8 @@ has been implemented in technics, described as "in solder this, connect with a w
 
 However, it works. The only trouble has been screening the sensetive digital part of the device from electromagnetic surges. Without proper protection, there have been problems with:
  * GSM mobile phone, sending data near
- * house refridgerator, starting to operate
+ * house refrigerator, starting to operate
  * Aquarium tube lamp, starting itself with a discharge
 In that particular case, the problems seem to have been solved with shielding sensetive part of the device (everything, except relays and power supply) with 2-4 layers of household aluminium foil.
 
-The photographs of the device can be seen in main repository.
-
-
+The photographies of the device can be seen in SVN trunk in photos/ directory http://code.google.com/p/aquarium-avr-controller/source/browse/#svn/trunk/photos.
