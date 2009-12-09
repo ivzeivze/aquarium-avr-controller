@@ -31,4 +31,12 @@ One, willing to construct the device, apart from basic elements (resistors, capa
  * 32768 Hz clock resonator with 3-30 pf variable capacitor
  * 5v self-beeping beeper (beeps on constant voltage)
 Everything, that exists on schemas, but is not mentioned here, is considered to be "basic" :P.
+
+== Assemble hardware ==
+
+Doing so manually is a difficult job (I guarantee this!). However, difficulty is relative.
+
+In this section I would like to remind that "informational" part of this device needs proper screening. 
+
+Assembling thermometer is worth discussing. TWI bus is used to communicate to the chip, lines are pulled up with 10k resistors, operation frequency is set to 770 Hz (See code of function configure_mu() in aquarium.c and Atmel datasheet for ATMega16L, page 176). This limits wire capacity: <math>\frac{1}{r*(wire capacity)} >> 770Hz</math>. 
  
