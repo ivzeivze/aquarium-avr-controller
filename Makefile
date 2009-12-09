@@ -10,14 +10,13 @@ aquarium.hex : aquarium.out
 aquarium.out : aquarium.o display.o delays.o thermometer.o eeprom.o locale.o simpledevices.o
 	$(CC) $(CFLAGS) -o aquarium.out -Wl,-Map,aquarium.map aquarium.o display.o delays.o thermometer.o eeprom.o locale.o simpledevices.o
 
-
-aquarium.o : aquarium.c 
+aquarium.o : aquarium.c bits.h delays.h display.h thermometer.h eeprom.h locale.h simpledevices.h 
 	$(CC) $(CFLAGS) -Os -c aquarium.c
-display.o : display.c display.h 
+display.o : display.c display.h bits.h delays.h
 	$(CC) $(CFLAGS) -Os -c display.c
 delays.o : delays.c delays.h 
 	$(CC) $(CFLAGS) -Os -c delays.c
-thermometer.o : thermometer.c thermometer.h 
+thermometer.o : thermometer.c thermometer.h bits.h delays.h
 	$(CC) $(CFLAGS) -Os -c thermometer.c
 eeprom.o : eeprom.c eeprom.h 
 	$(CC) $(CFLAGS) -Os -c eeprom.c
