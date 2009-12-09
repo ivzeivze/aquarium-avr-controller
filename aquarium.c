@@ -4,7 +4,7 @@
  **/
 #define Ver0 0
 #define Ver1 9
-#define Ver2 3 
+#define Ver2 4 
 /**
  * Copyright (C) 2009  ZelinskiyIS.
  *
@@ -346,7 +346,7 @@ char lightdata	[3	]; /*bit-by-bit per hour light map (LSB - 0, MSB - 23)*/
 *set from outside the ui, the freshness determines, how many times the value can be shown*/
 char avg_temp;
 char avg_temp_invalid=1;/*set true, if abg_temp holds value, that's not yet adequate*/
-char temp_meas_error=1;/*set externally, if we experience troubles getting temperature info*/
+char temp_meas_error=0;/*set externally, if we experience troubles getting temperature info*/
 
 void set_avg_temp_invalid(){
 	avg_temp_invalid=1;
@@ -685,26 +685,27 @@ State 1 means, that we have asked termometer to measure temperature,
 and nothing suspicious has happened to it until now.*/
 
 char thermo_state=STATE_NEED_TO_START_CONVERSION;/*set to zero at ATmega reset/start*/
-/*This is a high-level method for checking temperature.
-*Unlike it's low-level analog get_temperature(),
-*nothing except this method is needed to call to acquire temperature value.
-*This method reports a temperature value, if one is ready for yielding.
-*If it is not, the method starts temperature yielding process and returns 
-*special return code, signalizing that the user should come later to check the value.
-*
-*@params:	 *come_later - set to not 0, if the user need to check the temperature later,
-			set to 0, if a temperature value has been reported
-*			 *t - temperature, degrees C, multiplied by 10.
-*@returns: 0, in case of correct operation
-*          1,2,3,4,... oter codes, signalizing hardware errors.
-*
-*If return code is not null, other values are undefined, 
-*otherwise if come_later is not null, t undefined, 
-*otherwise t is set.
-*
-*/
+/**
+ * This is a high-level method for checking temperature.
+ * Unlike it's low-level analog get_temperature(),
+ * nothing except this method is needed to call to acquire temperature value.
+ * This method reports a temperature value, if one is ready for yielding.
+ * If it is not, the method starts temperature yielding process and returns 
+ * special return code, signalizing that the user should come later to check the value.
+ *
+ * @param	*come_later - set to not 0, if the user need to check the temperature later,
+ * 			set to 0, if a temperature value has been reported
+ * @param	*t - temperature in degrees C, multiplied by 2.
+ * @return 0 if OK,
+ *           1,2,3,4,... on hardware errors.
+ *
+ * If return code is not null, other values are undefined, 
+ * otherwise if come_later is not null, t undefined, 
+ * otherwise t is set.
+ *
+ */
 
-char thermo_get_temperature(char*come_later,char*t){
+char thermo_get_temperature(char* come_later, char* t){
 	char r;
 	char c;
 	char t_;
@@ -856,15 +857,43 @@ long round_and_remove_zeroes(long n,long by){
 
 
 /*########Temperature-studying structure##########*/
-/*The structures are devoted to reducin possible termometer noise
+/*The structures are devoted to reducing possible termometer noise
 by providing means of calculating average measurement*/
 /*8 measurements produce one output*/
-#define T_N 8
+#define T_N 32
 char measurements[T_N]; /*array, that will hold the values*/
 unsigned char next_empty=0;/*cells 0..next_empty-1 hold valid experimental values*/
-char valid; /*bits of this var gives information, if that measurement was valid, or rather finished with an error*/
+unsigned char valid[4]; /*Bits of this array identify, whether the 
+mesaurement has been correct. The array have 32 bits, enough for T_N=32*/
+/**
+ * Looks into 'valid' array and returns boolean value of the requested bit.
+ * @param n_bit - bit offset, value in 0..T_N-1
+ * @return 0 if the bit = 0, some non-zero value, if bit = 1
+ */
+char is_valid(char n_bit){
+	unsigned char byte_offset = n_bit/8;
+	unsigned char local_bit_offset=n_bit % 8;
+	return valid[byte_offset] & (1<<local_bit_offset);/*masked properly*/	
+}
+
+/**
+ * Sets 'valid' array bit to the specified boolean value.
+ * @param val - boolean value to be set
+ * @param n_bit - bit to be set, value from 0..T_N-1
+ */
+void set_valid(char val, char n_bit){
+	unsigned char byte_offset = n_bit/8;
+	unsigned char local_bit_offset=n_bit % 8;
+	if(val){/*setting bit to 1*/
+		valid[byte_offset]|=1<<local_bit_offset;
+	}else{/*setting bit to 0*/
+		valid[byte_offset]&=~(1<<local_bit_offset);
+	}
+}
+	
+
 /*if there have been more than T_ERR faulty experimental results, the whole serie is invalid*/
-#define T_ERR 2
+#define T_ERR 4
 
 /**
  * resets studier
@@ -891,13 +920,13 @@ char t_stud_next(char in_value, char inc_valid){
 	}else{/*need more data*/
 		if(inc_valid){
 			if((in_value<=40*2)&&(in_value>=5*2)){
-				measurements[next_empty]=in_value;
-				valid|=1<<next_empty;
+				measurements[next_empty]=in_value;				
+				set_valid(1,next_empty);
 			}else{/*suspicious reading*/
-				valid&=~(1<<next_empty);	
+				set_valid(0,next_empty);
 			}
 		}else{
-			valid&=~(1<<next_empty);
+			set_valid(0,next_empty);
 		}
 		next_empty+=1;
 		return 0;
@@ -922,7 +951,7 @@ char t_get_average(char* t, char* fault){
 		char faulty_counter=0;
 		long summ=0;
 		for(j=0;j<T_N;j++){
-			if(valid&(1<<j)){/*good measurement, good measurements are from 5*2 to 45*2 - see some lines below , that's why we may not care about signs dC*/
+			if(is_valid(j)){/*good measurement, good measurements are from 5*2 to 45*2 - see some lines below , that's why we may not care about signs dC*/
 				summ+=measurements[j];
 			}else{/*faulty measurement*/
 				faulty_counter+=1;
@@ -1145,6 +1174,16 @@ int main(void){
 	configure_mu();	/*setting up 
 					*some microcontroller features*/	
 	initialize_lcd();/*setting up LCD*/
+	{
+		char k;
+		for(k=0;k<20;k+=1){
+			beepon();
+			sleep_millis(50);
+			beepoff();
+			sleep_millis(50);
+			asm("wdr");
+		}
+	}
 	eeprom_backup_or_restore_configs(0xff,0);/*load temp and lightdata from EEPROM, leaving interrupts disabled*/	
 	{
 		char lang_displaying_thermometer_absence=lang/*copying*/;
