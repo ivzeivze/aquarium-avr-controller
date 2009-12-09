@@ -1,0 +1,13 @@
+#summary Creating a real device with the use of this project.
+
+= Introduction =
+
+This page is supposed to explain how one should use information, this project offers, to create a real device. 
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
