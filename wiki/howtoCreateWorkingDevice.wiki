@@ -51,7 +51,9 @@ TWI bus is used to communicate to the chip, lines are pulled up with 10k resisto
 To make the construction waterproof, I suggest using a glass tube with one side open (that's not, what I have - I have a jar, it can bee seen on photos). The idea is to put DS1621 chip there and to fill the tube with paraffin. 
 
 === LCD connector ===
-The wire system, that connects LCD to microcontroller, should be short. If faults are observed because of the system being too long, some asm("nop"); may be added to display.c : tact()  and  display.c : wait_lcd_ready() functions. This will slow-down communicaion process.
+The wire system, that connects LCD to microcontroller, should be short. 
+
+Data transmission rate may be changed by editing number of asm("nop") in display.c : tact()  and  display.c : wait_lcd_ready() functions.
 
 
 == Upload firmware ==
