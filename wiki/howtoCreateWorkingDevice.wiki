@@ -1,8 +1,11 @@
 #summary Creating a real device with the use of this project.
+#labels AVR
 
 = Introduction =
 
 This page is supposed to explain how one should use information, this project offers, to create a real device. 
+
+Building an instance of this device is divided into steps.
 
 = Steps =
 
@@ -40,12 +43,12 @@ In this section I would like to remind that "informational" part of this device 
 
 Assembling thermometer is worth discussing. 
 
-TWI bus is used to communicate to the chip, lines are pulled up with 10k resistors, operation frequency is set to 770 Hz (See code of function configure_mu() in aquarium.c and Atmel datasheet for ATMega16L, page 176). This limits wire capacity: r*(wire capacity) << 1/(770) s. Of cause, the fact that wire capacity is not too big can be tested practically by choosing a random piece of wire and seing, whether thermometer and microcontroller can communicate.
+TWI bus is used to communicate to the chip, lines are pulled up with 10k resistors, operation frequency is set to 770 Hz (See code of function configure_mu() in aquarium.c and Atmel datasheet for ATMega16L, page 176). This limits wire capacity: r*(wire capacity) << 1/(770) s. Of cause, the fact that wire capacity is not too big can be tested practically by choosing a random piece of wire and seeing, whether thermometer and microcontroller can communicate.
 
 To make the construction waterproof, I suggest using a glass tube with one side open (that's not, what I have - I have a jar, it can bee seen on photos). The idea is to put DS1621 chip there and to fill the tube with paraffin. 
  
 == Upload firmware ==
-There are many ways to program AVR chips, any can be used. This device schematics, however, is desined for use with "dapa" programmer. Dapa is very simple: some wires with resistors, connected to computrer LPT port. Dapa circuit is among the other in project files. If you plan to use another programmer, change programming socket schema so that only microcontroller RESET resistor is left (the problem is that programming socket is combined with a resistor, that pulls RESET up).
+There are many ways to program AVR chips, any can be used. This device schematics, however, is designed for use with "dapa" programmer. Dapa is very simple: some wires with resistors, connected to computer LPT port. Dapa circuit is among the other in project files. If you plan to use another programmer, change programming socket schema so that only microcontroller RESET resistor is left (the problem is that programming socket is combined with a resistor, that pulls RESET up).
 
 Programming involves two steps:
  * Set fuse bytes: Fuse Low Byte = 0xa1, Fuse High Byte = 0xd9 
@@ -57,3 +60,5 @@ In case of using a Linux box with lpt-attached dapa the commands to perform thes
     sudo -u lp uisp -dprog=dapa --erase
     sudo -u lp uisp -dprog=dapa --upload if=aquarium.hex
 }}}
+
+After uploading firmware the device shall start operating with clock set to 12:00:00. DS1621 thermometer flash internal parameters are checked at startup and fixed, if it is necessary. Upon changing something in user interface, configuration is backed up to EEPROM, so that if microcontroller gets reset (electromagnetic surge, power-off with bad internal back-up battery), only time will need adjusting.
