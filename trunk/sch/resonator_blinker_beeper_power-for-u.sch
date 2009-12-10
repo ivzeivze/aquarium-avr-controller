@@ -19,7 +19,7 @@ C 42200 48700 1 270 0 beeper-1.sym
 T 43100 48400 5 10 0 0 270 0 1
 device=BEEPER
 T 42900 48400 5 10 1 1 270 0 1
-refdes=U?
+refdes=U1
 T 43300 48400 5 10 0 0 270 0 1
 symversion=0.1
 }
