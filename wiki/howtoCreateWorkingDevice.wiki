@@ -20,7 +20,7 @@ However, it works. The only trouble has been screening the sensetive digital par
  * Aquarium tube lamp, starting itself with a discharge
 In that particular case, the problems seem to have been solved with shielding sensetive part of the device (everything, except relays and power supply) with 2-4 layers of household aluminium foil.
 
-The photographies of the device can be seen in SVN trunk in photos/ directory: http://code.google.com/p/aquarium-avr-controller/source/browse/#svn/trunk/photos.
+The photographies of the device can be seen in SVN trunk in photos/ directory: http://code.google.com/p/aquarium-avr-controller/source/browse/#svn/documentation/photos.
 
 == Choose hardware ==
 One, willing to construct the device, apart from basic elements (resistors, capacitors,...) would need:
