@@ -1,9 +1,0 @@
-This directory contains circuit schemas, created in a simple gEDA editor.
-
-On some schemes there is a microcontroller with single device, attached to it.
-This has been done, because drawing all devices on the same scheme would
-overburden it. All the schemes shall be, of couse, combined when planning
-a real device. 
-
-There are some ATMega16L pins, not connected on any scheme to anything. 
-These shall be left unconnected at all.
