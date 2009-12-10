@@ -39,9 +39,9 @@ Everything, that exists on schemas, but is not mentioned here, is considered to 
 
 Doing so manually is a difficult job (I guarantee this!). However, difficulty is relative.
 
-It shall not be forgotten that "informational" part of this device needs proper screening. 
+Don't forget: "informational" part of this device needs proper screening. 
 
-This projects has some datasheets, copypasted for convinience. See:
+This project has some datasheets, copypasted for convinience. See:
 http://code.google.com/p/aquarium-avr-controller/source/browse/#svn/documentation/datasheets.
 
 === Thermometer connector ===
