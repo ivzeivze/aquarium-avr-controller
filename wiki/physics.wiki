@@ -1,5 +1,4 @@
 
-
 = Introduction =
 
 Some physical issues described here.
@@ -19,4 +18,10 @@ Heating is much simpler, because heating devices are generally simpler and are m
 
 When fed with power supply, not filtered well, DS1621 thermometer produces noisy measurements. In order to make the system resistant against such situations, averaging is performed before using temperature value to decide about temperature-controlling activities. As for version 0.9.4, the number of measurements to average is 32. It shall be noted, that noise amplitude decreases as N^(-1/2) upon increasing N, assuming that noise values are statistically independent.
 
+== Heater -> DS1621 thermometer on TWI electrical surge issue ==
 
+To raise water temperature a simple device - glass tube with conductive wire inside - is used. In the same water with heater DS1621 thermometer chip on wires is placed. 
+In my case, thermometer chip is packed in small glass jar, filled with stearin. 4 plain wires - (+,SDA,-,SCL), packed in plastic tube, connect the chip with main device board, there is no conductive shield around the wires. 
+
+It was shown that turning heater on/off create electromagnetic disturbance, that makes microcontroller reboot, if thermometer is in water with heater and there are no capacitors, connected to SDA and SCL TWI lines. Adding two 33nf capacitors (SVN revison 33) to SDA and SCL on the main board fixes the problem. 33nf capacity has been chosen minding 770 Hz TWI transmission rate and 10k pull-up resistors. The capacity is close to
+upper possible limit. The idea behind such modification is that high surge frequencies are grounded via these capacitors, this way protecting AVR microcontroller.
