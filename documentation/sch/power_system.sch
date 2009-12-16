@@ -70,30 +70,7 @@ refdes=delta
 N 53000 47200 53000 48500 4
 N 53000 48000 53500 48000 4
 N 54400 48000 54900 48000 4
-C 50200 48300 1 270 0 schottky-1.sym
-{
-T 50872 47978 5 10 0 0 270 0 1
-device=DIODE
-T 50700 48000 5 10 1 1 270 0 1
-refdes=bat54
-T 51032 47959 5 10 0 1 270 0 1
-footprint=SOD80
-}
-C 51400 48300 1 270 0 schottky-1.sym
-{
-T 52072 47978 5 10 0 0 270 0 1
-device=DIODE
-T 51900 48000 5 10 1 1 270 0 1
-refdes=bat54
-T 52232 47959 5 10 0 1 270 0 1
-footprint=SOD80
-}
-N 51000 48300 51000 49400 4
-N 50400 48300 51600 48300 4
-N 50400 47400 50400 47200 4
-N 50400 47200 51600 47200 4
-N 51600 47200 51600 47400 4
-N 51000 47200 51000 46000 4
+N 51000 46000 51000 49400 4
 N 51000 46000 45500 46000 4
 C 48700 46600 1 90 0 capacitor-4.sym
 {
@@ -171,3 +148,7 @@ beta - noise-protected power
 gamma - noise and opwer-off protected power
 delta - relay power supply
 
+T 50100 47300 9 10 1 0 0 0 3
+Alpha and beta were
+ historically different, 
+separated by bat54 diode.
