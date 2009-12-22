@@ -24,6 +24,8 @@
 #include "display.h"
 #include "bits.h"
 
+
+
 /**
  * Tact makes A7 ping generate a tact impulse 
  * It shall be noted that this method provides
@@ -36,22 +38,35 @@
  * tacting process.
 */
 static void tact(void){
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");/*11 microsecond delay - let the data levels establish*/
-	PORTA|=1<<7;		
-	asm("nop");/*there are no resistors on E line, so*/
-	asm("nop");/*it must be working faster*/	
-	PORTA&=~(1<<7);	
-	asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");/*11 microsecond delay - let the data levels establish*/
+        PORTA|=1<<7;            
+        asm("nop");/*there are no resistors on E line, so*/
+        asm("nop");/*it must be working faster*/        
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        asm("nop");
+        PORTA&=~(1<<7); 
+        asm("nop");
+        asm("nop");
+        asm("nop");
 }
+
 
 
 void initialize_lcd(void){
@@ -121,12 +136,19 @@ void initialize_lcd(void){
 /**
  * The method continuously reads lcd busy flag, until
  * it signalises that lcd is ready. After this method call
- * all PORTA lines are left as outputs. Note, that 
+ * all PORTA lines are left as outputs. 
+ * 
+ * Note, that 
  * high level in BS means NOT busy, while low level is
  * busy. This is especially helpful, because if lcd gets powered off, 
  * the reading of busy bit will be 0, what means ready.
+ * 
+ * If the method fails to get answer from the LCD in some time (see code),
+ * it returns fail.
+ * @return 0	-	OK
+ * 		   0xff	-	failed to get answer from the LCD
 */
-static void wait_lcd_ready(void){
+static char wait_lcd_ready(void){
 	char in=0xff;
 	DDRA=bits(1,1,1,1,0,0,0,0);/*tact,r/s,r/w - outputs, 
 								data lines - inputs*/
@@ -136,7 +158,30 @@ static void wait_lcd_ready(void){
 	asm("nop");asm("nop");
 	asm("nop");
 	asm("nop");asm("nop");
+	/**
+	 * Totally, all this loop takes a bit more that 22 microseconds.
+	 * It may happen so that the LCD hangs (poor surge protection).
+	 * If it fails to respong OK in proper time, the whole will get reset 
+	 * from the watchdog. Fail.
+	 * In order to keep our device resistant against such fails, 
+	 * let's skip waiting after 
+	 */
+	int responce_tolerance = 5000; 
+	 /** 
+	  * tries.
+	  * This gives 0.11 seconds of waiting assuming that it takes 22 microseconds to execute one loop pass.
+	  * 
+	  **/
+	int fail_counter = 0;
+	char answer_to_return = 0;/*unless set to 0xff in toleranse checker,
+	this value will be returned at function end*/
 	while(in)/*not zero-busy or turned off*/{
+		fail_counter += 1;
+		if(fail_counter > responce_tolerance){
+			/*LCD has probably freezed :(*/
+			answer_to_return = 0xff;
+			break;/*finishing waiting process*/
+		}
 		PORTA|=1<<7;/*tact up!*/		 
 		asm("nop");asm("nop");
 		asm("nop");asm("nop");
@@ -150,44 +195,62 @@ static void wait_lcd_ready(void){
 		PORTA|=1<<7;/*tact up!--------\     */
 		asm("nop");asm("nop");    /*   \    */
 		PORTA&=~(1<<7);/*tact down!-----> that was 4 bits skipping*/
-		asm("nop");asm("nop");
-	}
-	/*It's not busy!!*/
+		asm("nop");asm("nop");		
+	}	
+	
 	DDRA=bits(1,1,1,1,1,1,1,1);/*setting DDRA pins back	to be outputs*/
-	PORTA=0;
+	PORTA=0;/*Zero all levels*/
+	
+	return answer_to_return;
 }
 
 
-/*** clears lcd - never used in the code, but seem to work
-void clr_lcd(void){
+void clr_lcd(void){	
 	PORTA=bits(0,0,0,0,0,0,0,0);
 	tact();
 	PORTA=bits(0,0,0,0,0,0,0,1);
 	tact();
-	wait_lcd_ready();
 	PORTA=0;
-}*/
+	char fail=wait_lcd_ready();
+	if(fail){
+		initialize_lcd();/*LCD dead, reititialising it*/
+		/*And LCD is clear, because it's just from reboot. TaDa!*/
+	}
+	
+}
 
-void lcd_put_char(char addr,char symbol){/*puts a character 
+void lcd_put_char(char addr, char symbol){/*puts a character 
 	to the LCD Display Data RAM.
 	@param addr - DDRAM address (7 bits are taken in account)
 	@param symbol - symbol code (all 8 bits)*/
 	/*helper bits(tact,n/c,R/W,R/S,d7,d6,d5,d4)*/	
-	PORTA=(0<<7)+(0<<5)+(0<<4)+(1<<3)+(7&(addr>>4));
-	/*let the levels establish*/
-	tact();
-	PORTA=(0<<7)+(0<<5)+(0<<4)+(0x0f&addr);
-	/*let the levels establish*/
-	tact();		
-	wait_lcd_ready();
-	PORTA=(0<<7)+(0<<5)+(1<<4)+(symbol>>4);
-	/*let the levels establish*/
-	tact();	
-	PORTA=(0<<7)+(0<<5)+(1<<4)+(0x0f&symbol);
-	/*let the levels establish*/
-	tact();
-	wait_lcd_ready();
-	PORTA=0;
+	for(;;){
+		PORTA=(0<<7)+(0<<5)+(0<<4)+(1<<3)+(7&(addr>>4));
+		/*let the levels establish*/
+		tact();
+		PORTA=(0<<7)+(0<<5)+(0<<4)+(0x0f&addr);
+		/*let the levels establish*/
+		tact();		
+		char fail=wait_lcd_ready();
+		if(fail){
+			/*0_o the LCD's freezed.*/
+			initialize_lcd();
+			continue;/*again*/
+		}
+		PORTA=(0<<7)+(0<<5)+(1<<4)+(0x0f&(symbol>>4));
+		/*let the levels establish*/
+		tact();	
+		PORTA=(0<<7)+(0<<5)+(1<<4)+(0x0f&symbol);
+		/*let the levels establish*/
+		tact();
+		fail = wait_lcd_ready();
+		if(fail){		
+			initialize_lcd();
+			continue;
+		}
+		PORTA=0;
+		break;
+	}
 }
 
 void lcd_print(char display_pos, char* str){

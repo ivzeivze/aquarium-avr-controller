@@ -66,6 +66,11 @@
 * GND|----I>|----|port|---I>|-----|VCC   ( -I>|- means diode ).
 */
 
+/**
+ * All character outputting methods, listed here, attempt to 
+ * reinitialise LCD, if they discover LCD freeze.
+ */
+
 
 /**
  * According to Winstar company manual, 
@@ -77,13 +82,19 @@
  **/
 void initialize_lcd(void);
 
+
+/** 
+ * Clears lcd.
+ */
+void clr_lcd(void);
+
 /**
  * Puts a character 
  * to the LCD Display Data RAM.
  * @param addr - DDRAM address (7 bits are taken in account)
  * @param symbol - symbol code (all 8 bits)
  **/
-void lcd_put_char(char addr,char symbol);
+void lcd_put_char(char addr, char symbol);
 /**
  *Takes a null-terminated string str and feeds
  *it up to the lcd DDRAM, starting from address
