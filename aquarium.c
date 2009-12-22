@@ -1,10 +1,10 @@
 /**
  * Aquarium.c, firmware for ATMega16L - based aquarium - controling device.
- * Version 0.9.3 (8 dec 2009)
+ * Version:
  **/
 #define Ver0 0
 #define Ver1 9
-#define Ver2 4 
+#define Ver2 5
 /**
  * Copyright (C) 2009  ZelinskiyIS.
  *
@@ -514,12 +514,11 @@ void werde(char up, char down, char change0, char change1){
 	switch(ui_state){
 		char h,m,s;/*hours,minutes,seconds to get*/
 	case ui_default:{						
+			clr_lcd();/*Clearing LCD*/
 			get_time(&h,&m,&s);/*carefully getting time, preventing collisions with time updating interrupt responce (see function description)*/
-			lcd_time_print(h,m,s,0);/*0 - upper line*/
-			text(str, TEXT_spaces, lang);
-			lcd_print(0x40,str);/*Erasing second line*/			
+			lcd_time_print(h,m,s,0);/*0 - upper line*/			
 			if(temp_meas_error){
-				text(str,TEXT_oshibka, lang);
+				text(str, TEXT_oshibka, lang);
 				lcd_print(0x40,str);
 			}else if(avg_temp_invalid){
 				/*just printing nothing*/
@@ -581,10 +580,9 @@ void werde(char up, char down, char change0, char change1){
 		}
 		break;
 	case ui_changelight:{
+			clr_lcd();/*Clearing LCD*/
 			text(str, TEXT_lightchas, lang);
-			lcd_print(0,str);
-			text(str, TEXT_spaces, lang);
-			lcd_print(0x40,str);
+			lcd_print(0,str);			
 			int byte=changehour/8;
 			int pos=changehour%8;
 			if(lightdata[byte]&(1<<pos)){
@@ -604,9 +602,7 @@ void werde(char up, char down, char change0, char change1){
 		}
 		break;
 		case ui_changelang:{
-			text(str, TEXT_spaces, lang);
-			lcd_print(0,str);
-			lcd_print(0x40,str);
+			clr_lcd();/*Clearing LCD*/
 			text(str, TEXT_jazik, lang);
 			lcd_print(0,str);
 			text(str, TEXT_thislang, lang);
@@ -615,10 +611,9 @@ void werde(char up, char down, char change0, char change1){
 		}
 		break;
 		case ui_showfirmware:{
+			clr_lcd();/*Clearing LCD*/
 			text(str,TEXT_proshivka, lang);
 			lcd_print(0x00,str);/*That was title in the upper line*/
-			text(str, TEXT_spaces, lang);
-			lcd_print(0x40,str);/*erasing second line*/
 			/*printing firmware version*/
 			char pos=0x40;/*Next empty screen position*/
 			pos+=lcd_num_print(pos, Ver0);
@@ -1190,12 +1185,13 @@ int main(void){
 		while(check_termo_configs()){/*ensuring that termometr is properly configured, 
 			this only returns not zeros, if it can't fix termometer itself*/
 			asm("wdr");			
+			clr_lcd();/*Clearing screen*/
 			text(str, TEXT_waitforter, lang_displaying_thermometer_absence);
 			lcd_print(0,str);
 			text(str, TEXT_mometr, lang_displaying_thermometer_absence);
 			lcd_print(0x40,str);
 			rotate_lang(&lang_displaying_thermometer_absence);/*So that error message is displayed in many languages*/
-			sleep_millis(500);/*stops to display info*/
+			sleep_millis(1500);/*stops to display info*/
 		}
 	}
 	asm("sei");	
@@ -1206,7 +1202,7 @@ int main(void){
 		check_ac_power();/*look on Ualpha level, look, if it used to change before, if it's now OK, set power_on variable, restart LCD, if necessary.*/
 		if(power_on){/*If there is no power, we must not do anything. Just react to the only enabled interruption - every-second clock
 						from the asynchronous timer with a 32768Hz quartz attached*/
-			ledon();/*light on*/
+			ledon();/*light on*/			
 			switch_external_devices();/*issue commands to relays, most time-consuming (because of TWI termometer)*/		
 			char cf0,cf1,cf2,cf3;
 			asm("cli");
@@ -1219,6 +1215,7 @@ int main(void){
 			flag2=0;
 			flag3=0;					
 			asm("sei");
+			
 			werde(cf0,cf1,cf2,cf3);/*Change main interface states, depending on button data, and
 									 issue some commands depending on the state and input*/			
 			ledoff();			
