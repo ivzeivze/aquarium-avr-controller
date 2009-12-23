@@ -37,13 +37,7 @@
  * execution, only prolong delay periods, thus not hurting the
  * tacting process.
 */
-static void tact(void){
-        asm("nop");
-        asm("nop");
-        asm("nop");
-        asm("nop");
-        asm("nop");
-        asm("nop");
+static void tact(void){       
         asm("nop");
         asm("nop");
         asm("nop");
@@ -57,13 +51,7 @@ static void tact(void){
         PORTA|=1<<7;            
         asm("nop");/*there are no resistors on E line, so*/
         asm("nop");/*it must be working faster*/        
-        asm("nop");
-        asm("nop");
-        asm("nop");
-        asm("nop");
         PORTA&=~(1<<7); 
-        asm("nop");
-        asm("nop");
         asm("nop");
 }
 
@@ -218,6 +206,7 @@ void clr_lcd(void){
 	}
 	
 }
+
 
 void lcd_put_char(char addr, char symbol){/*puts a character 
 	to the LCD Display Data RAM.
