@@ -1,0 +1,154 @@
+v 20081231 1
+C 40000 40000 0 0 0 title-B.sym
+C 41000 48900 1 0 0 connector2-1.sym
+{
+T 41200 49900 5 10 0 0 0 0 1
+device=CONNECTOR_2
+T 41000 49700 5 10 1 1 0 0 1
+refdes=conn1
+}
+C 41000 46900 1 0 0 connector2-1.sym
+{
+T 41200 47900 5 10 0 0 0 0 1
+device=CONNECTOR_2
+T 41000 47700 5 10 1 1 0 0 1
+refdes=conn2
+}
+T 41600 49700 9 10 1 0 0 0 1
++5V Adapter
+T 41700 47400 9 10 1 0 0 0 2
++(3.0 - 4.5)V Zink-Carbon battery
+
+C 42600 48300 1 0 0 common.sym
+C 42600 46900 1 0 0 common.sym
+C 43400 49400 1 270 0 resistor-2.sym
+{
+T 43750 49000 5 10 0 0 270 0 1
+device=RESISTOR
+T 43700 49200 5 10 1 1 270 0 1
+refdes=220
+}
+C 43400 48300 1 0 0 common.sym
+N 42700 49100 42700 48500 4
+N 43500 49300 43500 49400 4
+N 42600 49400 53000 49400 4
+C 47200 50300 1 270 0 terminal-1.sym
+{
+T 47950 49990 5 10 0 0 270 0 1
+device=terminal
+T 47800 49990 5 10 0 0 270 0 1
+footprint=CONNECTOR 1 1
+T 47250 50050 5 10 1 1 270 6 1
+refdes=alpha
+}
+C 53200 48500 1 90 0 diode-3.sym
+{
+T 52650 48950 5 10 0 0 90 0 1
+device=DIODE
+T 52750 48850 5 10 1 1 90 0 1
+refdes=a strong diode
+}
+C 53500 47800 1 0 0 capacitor-4.sym
+{
+T 53700 48900 5 10 0 0 0 0 1
+device=POLARIZED_CAPACITOR
+T 53700 48300 5 10 1 1 0 0 1
+refdes=470u
+T 53700 48500 5 10 0 0 0 0 1
+symversion=0.1
+}
+C 54800 47800 1 0 0 common.sym
+C 53100 46300 1 90 0 terminal-1.sym
+{
+T 52350 46610 5 10 0 0 90 0 1
+device=terminal
+T 52500 46610 5 10 0 0 90 0 1
+footprint=CONNECTOR 1 1
+T 53050 46550 5 10 1 1 90 6 1
+refdes=delta
+}
+N 53000 47200 53000 48500 4
+N 53000 48000 53500 48000 4
+N 54400 48000 54900 48000 4
+N 51000 46000 51000 49400 4
+N 51000 46000 45500 46000 4
+C 48700 46600 1 90 0 capacitor-4.sym
+{
+T 47600 46800 5 10 0 0 90 0 1
+device=POLARIZED_CAPACITOR
+T 48200 46800 5 10 1 1 90 0 1
+refdes=470u
+T 48000 46800 5 10 0 0 90 0 1
+symversion=0.1
+}
+C 48600 48200 1 180 0 common.sym
+N 48500 47500 48500 48000 4
+N 48500 46600 48500 46000 4
+C 45300 46000 1 270 0 schottky-1.sym
+{
+T 45972 45678 5 10 0 0 270 0 1
+device=DIODE
+T 45800 45700 5 10 1 1 270 0 1
+refdes=bat54
+T 46132 45659 5 10 0 1 270 0 1
+footprint=SOD80
+}
+C 43800 46000 1 270 0 schottky-1.sym
+{
+T 44472 45678 5 10 0 0 270 0 1
+device=DIODE
+T 44300 45700 5 10 1 1 270 0 1
+refdes=bat54
+T 44632 45659 5 10 0 1 270 0 1
+footprint=SOD80
+}
+N 42700 47400 44000 47400 4
+N 44000 47400 44000 46000 4
+N 44000 45100 44000 44600 4
+N 44000 44600 45500 44600 4
+N 45500 44600 45500 45100 4
+C 47000 46900 1 270 0 terminal-1.sym
+{
+T 47750 46590 5 10 0 0 270 0 1
+device=terminal
+T 47600 46590 5 10 0 0 270 0 1
+footprint=CONNECTOR 1 1
+T 47050 46650 5 10 1 1 270 6 1
+refdes=beta
+}
+N 44700 44600 44700 43000 4
+N 44700 43000 53000 43000 4
+N 53000 43000 53000 43500 4
+C 52900 44400 1 270 0 terminal-1.sym
+{
+T 53650 44090 5 10 0 0 270 0 1
+device=terminal
+T 53500 44090 5 10 0 0 270 0 1
+footprint=CONNECTOR 1 1
+T 52950 44150 5 10 1 1 270 6 1
+refdes=gamma
+}
+C 51400 43400 1 90 0 capacitor-4.sym
+{
+T 50300 43600 5 10 0 0 90 0 1
+device=POLARIZED_CAPACITOR
+T 50900 43600 5 10 1 1 90 0 1
+refdes=1000u
+T 50700 43600 5 10 0 0 90 0 1
+symversion=0.1
+}
+C 51300 45100 1 180 0 common.sym
+N 51200 44300 51200 44900 4
+N 51200 43000 51200 43400 4
+T 49600 41100 9 10 1 0 0 0 1
+Power system
+T 46400 43900 9 10 1 0 0 0 5
+alpha - raw power from Adapter
+beta - noise-protected power 
+gamma - noise and opwer-off protected power
+delta - relay power supply
+
+T 50100 47300 9 10 1 0 0 0 3
+Alpha and beta were
+ historically different, 
+separated by bat54 diode.
