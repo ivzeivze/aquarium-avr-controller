@@ -24,9 +24,7 @@ DS1621 thermometer is connected via TWI interface. If not protected well, the sy
 Screened twisted pair cable (Cat.5e S/UTP) is used to link thermometer chip with microcontroller. The chip itself is wrapped in copper folder, connected to cable screen. The whole construction is mounted in glass tube and placed in aquarium water. 
 
 == TWI line capacity and pull-up resistor choice ==
-According to wikipedia (http://en.wikipedia.org/wiki/Category_5_cable) one color pair has a capacitance of about 50 pf per meter. 1 meter of cable is used. Thus we may (want to be!) be sure that the whole cable capacity is less than 100pf. In Atmel microcontroller datasheet (http://code.google.com/p/aquarium-avr-controller/source/browse/trunk/documentation/datasheets/DOC000151568(ATMega16x).pdf) one can find an restriction for pull-up resistor value: it can't be more than (1000 ns/{line capacity}). Using 100pf as this capacity, we obtain 10k to be the upper limit for pull-up resistor. 
+According to wikipedia (http://en.wikipedia.org/wiki/Category_5_cable) one color pair has a capacitance of about 50 pf per meter. 1 meter of cable is used. Thus we may (want to be!) be sure that the whole line capacity for both SDA and SCL is less than 100pf. In Atmel microcontroller datasheet (http://code.google.com/p/aquarium-avr-controller/source/browse/trunk/documentation/datasheets/DOC000151568(ATMega16x).pdf) one can find an restriction for pull-up resistor value: it can't be more than (1000 ns/{line capacity}). Using 100pf as this capacity, we obtain 10k to be the upper limit for pull-up resistor. 
 
 In reality, line capacity is less that 100pf. Because of that, 10k resistors shall work well. 
-
-
 
