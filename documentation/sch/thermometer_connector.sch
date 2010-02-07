@@ -54,3 +54,20 @@ N 44200 44500 55000 44500 4
 N 52900 46200 54100 46200 4
 N 54100 45400 54100 46600 4
 N 54100 45400 52900 45400 4
+T 48800 47700 9 10 1 0 0 0 1
+yellow-white
+T 48800 46400 9 10 1 0 0 0 1
+blue
+T 48800 45700 9 10 1 0 0 0 2
+green
+
+T 48800 42700 9 10 1 0 0 0 7
+yellow
+blue-white
+green-white
+brown
+brown-white
+SCREEN
+
+T 43700 49000 9 20 1 0 0 0 1
+1 meter of Cat.5e S/UTP - is used as a cord
