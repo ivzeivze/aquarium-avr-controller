@@ -83,14 +83,14 @@ void initialize_lcd(void){
 	char i;
 	for(i=0;i<2;i++){
 		/*wait 39 mus*/
-		sleep_50micros();
+		asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");
 		PORTA=bits(0,0,0,0,0,0,1,0);		 
 		tact();
 		PORTA=bits(0,0,0,0,1,0,0,0);/*2 lines (1 at a3), 5x8 letter (0 at a2)*/
 		tact();		
 	}/*two times, according to the manual*/
 	/*wait 37 micros*/
-	sleep_50micros();
+	asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");
 	char D=1;/*Display on*/
 	char C=1;/*Underline cursor*/
 	char B=0;/*Black blinking box cursor*/
@@ -99,7 +99,7 @@ void initialize_lcd(void){
 	PORTA=bits(0,0,0,0,1,D,C,B);/*display,cursor,blinking bits (2,1,0)*/	 
 	tact();
 	/*wait 37 micros*/
-	sleep_50micros();
+	asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");
 	PORTA=bits(0,0,0,0,0,0,0,0);	 
 	tact();
 	PORTA=bits(0,0,0,0,0,0,0,1);/*display clear*/	 
