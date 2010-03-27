@@ -4,9 +4,9 @@
  **/
 #define Ver0 0
 #define Ver1 9
-#define Ver2 5
+#define Ver2 6
 /**
- * Copyright (C) 2009  ZelinskiyIS.
+ * Copyright (C) 2009, 2010  ZelinskiyIS.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -754,17 +754,23 @@ char thermo_get_temperature(char* come_later, char* t){
 
 /*#__######Power-down protection############*/
 /**
-*This section contains functions and variables, designed
-*to cope with a situation, of AC power going down. The schema
-*of the device has a reserve power source, 3x1.5V
-*battery, that will provide power for some time 
-*(70ma*h battery - about 2 days at 3 ma). Our task is to try to 
-*minimize power consumption during no-power period.*/
+ * This section contains functions and variables, designed
+ * to cope with a situation, of AC power going down. The schema
+ * of the device has a reserve power source, 3x1.5V
+ * battery, that will provide power for some time 
+ * (70ma*h battery - about 2 days at 3 ma). Our task is to try to 
+ * minimize power consumption during no-power period.
+ **/
 
-volatile char power_on=1;/*This variable is normally 1, meaning that we are 
-	running on AC power. As soon as we detect that the AC power has 
-	gone down, we set this variable to 0. When we detect the opposite, 
-	we set it back to 1.*/
+/**
+ * This variable is normally 1, meaning that we are 
+ * running on AC power. As soon as we detect that the AC power has 
+ * gone down, we set this variable to 0. When we detect the opposite, 
+ * we set it back to 1. The following subsystem, that control power
+ * state and switches the wariable. This variable is set and used from 
+ * main ~thread, not from interrupts: it need to be volatile not.
+ **/
+char power_on = 0xff;
 
 
 /**
@@ -773,10 +779,8 @@ volatile char power_on=1;/*This variable is normally 1, meaning that we are
  * connected to PD0 and PD1 via 10K resistors. The device is good
  * for measuring power level. In addition, it isolates microcontroller
  * logics from power supply, as it would be, if we connected PD0
- * directly to power adapter out (this may cause microcontroller malfunction - 
- * experimental result).
- * The method checks, whether we are running on external power or not,
- * using the device
+ * directly to power adapter out. This is done for protection.
+ * The method checks, whether we are running on external power or not.
  * @return boolean answer to the question
  */
 char is_on_external_power(void){
@@ -788,46 +792,118 @@ char is_on_external_power(void){
 	return answer;
 }
 
+
+/**
+ * Power-controlling state-machine has three main group states (excluding 
+ * countd-down substates):
+ */ 
+enum power_manager_state {
+	PMS_OFF, /* No power */
+	PMS_ON, /* Power */
+	PMS_COUNTDOWN /* Power came reecntly, waiting */
+};
+
+/** 
+ * Power manager behaves like a state machine. It issues commands after
+ * each pass, here they are:
+ */
+enum power_manager_command {
+	PMC_IDLE,/* Do nothing */
+	PMC_SUSPEND,/* Prepare for sleeping without external power */
+	PMC_RESUME/* Resume from sleeping */
+};
+
+
+/**
+ * When external power returns, it's unwise to resume operation immediately. 
+ * So, let's wait this number of cycles before wake-up. 
+ */ 
+#define POWERON_DELAY 10 /* less than 255 since 'char' is used to store the counter */
+/** 
+ * Power manager state machine states
+ */
+enum power_manager_state pms = PMS_ON;
+/**
+ * This variable is set to POWERON_DELAY, when loosing power, and counted
+ * down to zero before returning to normal operation after power comes 
+ * back.
+ */
+char poweron_delay_cycles_left;
+
+/**
+ * This function implements power_manager state machine
+ * It uses 'pms', 'poweron_delay_cycles' global variables as state 
+ * machine state
+ * @param power_on - external power on or off (boolean)
+ * @return command of power management
+ */
+enum power_manager_command power_manager_werde(char ext_power){
+	enum power_manager_command command = PMC_IDLE; /* If no actions specified, IDLE */
+	switch(pms){
+		case PMS_OFF:
+			if(ext_power){
+				pms = PMS_COUNTDOWN;
+				poweron_delay_cycles_left = POWERON_DELAY;
+			}
+		break;
+		case PMS_ON:
+			if(!ext_power){
+				pms = PMS_OFF;
+				command = PMC_SUSPEND;
+			}
+		break;
+		case PMS_COUNTDOWN:
+			if(ext_power){
+				if(poweron_delay_cycles_left){
+					poweron_delay_cycles_left -= 1;
+				}else{
+					command = PMC_RESUME;
+					pms = PMS_ON;
+				}
+			}else{
+				/* Power went away when counting down :( */
+				pms = PMS_OFF;
+			}
+		break;		
+	}
+	return command; 
+}
+
+
 /** 
  * The method checks whether we are running on external power or not, 
  * and takes appropriate actions.
  * It s supposed to be called from main loop (in main() method).
  */
 void check_ac_power(void){
-	char ext_power=is_on_external_power();
-	
-	if(ext_power){
-		/*Now ON*/
-		if(power_on){
-			/*last time it was also on*/
-		}else{
-			/*last time it was off*/
-			initialize_lcd();
-			MCUCR=MCUCR&bits(0,1,0,0,1,1,1,1);/*setting a non-deep sleep mode (see ATmel manual)*/
-		}
-		power_on=0xff;
+	char ext_power = is_on_external_power();	
+	/* Asking power manager state machine what to do */
+	enum power_manager_command command = 
+		power_manager_werde( ext_power );
+	/* Doing it */
+	if(PMC_SUSPEND == command){		
+		thermo_state=STATE_NEED_TO_START_CONVERSION;/*After the power comes back, the last 
+		termometer reading will be obsolete.*/
+		temperature_studying_reset();/*resetting temperature measurements collector, because
+		collected values may be obsolete, as power comes back*/
+		set_avg_temp_invalid();/*don't display old temperature info*/
+		/*Disabling heater, ventillator and lamp - we don't know, when the power will be back, 
+		and what states the devicess will need to have. If we don't do this, the devces will turn on 
+		just after the power comes back and stay so, until enough temperature measurements will have been collected.*/
+		relay(LAMP,0);
+		relay(HEATER,0);
+		relay(VENTILATOR,0);			
+		MCUCR=(MCUCR|bits(0,0,1,1,0,0,0,0))&bits(0,1,1,1,1,1,1,1);/*setting a deep sleep mode (see ATmel manual)*/
+		power_on = 0;
+	}else if(PMC_RESUME == command){
+		/* last time it was off */
+		initialize_lcd();
+		MCUCR = MCUCR & bits(0,1,0,0,1,1,1,1);/*setting a non-deep sleep mode (see ATmel manual)*/
+		power_on = 0xff;
 	}else{
-		/*Now OFF*/
-		if(power_on){
-			/*last time it was on :(*/			
-			thermo_state=STATE_NEED_TO_START_CONVERSION;/*After the power comes back, the last 
-			termometer reading will be obsolete.*/
-			temperature_studying_reset();/*resetting temperature measurements collector, because
-			collected values may be obsolete, as power comes back*/
-			set_avg_temp_invalid();/*don't display old temperature info*/
-			/*Disabling heater, ventillator and lamp - we don't know, when the power will be back, 
-			and what states the devicess will need to have. If we don't do this, the devces will turn on 
-			just after the power comes back and stay so, until enough temperature measurements will have been collected.*/
-			relay(LAMP,0);
-			relay(HEATER,0);
-			relay(VENTILATOR,0);			
-			MCUCR=(MCUCR|bits(0,0,1,1,0,0,0,0))&bits(0,1,1,1,1,1,1,1);/*setting a deep sleep mode (see ATmel manual)*/
-		}else{
-			/*last time it was also off*/
-		}
-		power_on=0x00;
-	}/*Ja malenkiy chervaczek  __/\/\/00  {########} \_/   */
-}
+		/* Do nothing 8) */
+	}
+}/*Ja malenkiy chervaczek  __/\/\/00  {########} \_/   */
 /*#^^#######################################*/
 
 
