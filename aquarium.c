@@ -893,6 +893,9 @@ void check_ac_power(void){
 		relay(LAMP,0);
 		relay(HEATER,0);
 		relay(VENTILATOR,0);			
+		ledoff();
+		beepoff();
+		lcd_light(0);		
 		MCUCR=(MCUCR|bits(0,0,1,1,0,0,0,0))&bits(0,1,1,1,1,1,1,1);/*setting a deep sleep mode (see ATmel manual)*/
 		power_on = 0;
 	}else if(PMC_RESUME == command){
