@@ -1,4 +1,4 @@
-v 20081231 1
+v 20100214 2
 C 40000 40000 0 0 0 title-B.sym
 C 41000 48900 1 0 0 connector2-1.sym
 {
@@ -17,7 +17,7 @@ refdes=conn2
 T 41600 49700 9 10 1 0 0 0 1
 +5V Adapter
 T 41700 47400 9 10 1 0 0 0 2
-+(3.0 - 4.5)V Zink-Carbon battery
++(4.5)V Battery of alcaline button cells
 
 C 42600 48300 1 0 0 common.sym
 C 42600 46900 1 0 0 common.sym
