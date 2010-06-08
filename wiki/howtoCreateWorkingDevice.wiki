@@ -14,6 +14,8 @@ Building an instance of this device is divided into steps.
 There exists a working instance of the device, created in year 2009. The device 
 has been implemented in technics, described as "in solder this, connect with a wire to that, connect again, solder in that small thing, ...., find yourself in a mess of wires".
 
+Documentation has some photos.
+
 However, it works. The only trouble has been screening the sensitive digital part of the device from electromagnetic surges. Without proper protection, there have been problems with:
  * GSM mobile phone, sending data near
  * house refrigerator, starting to operate
