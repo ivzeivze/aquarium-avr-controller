@@ -1,0 +1,11 @@
+After successfully compiling the project, one need to:
+1) Set fuse bytes of ATMega microcontroller to valuses, shown at the beginning
+of aquarium.c.
+2) Upload firmware.
+
+There are multiple ways of doing it. In my particular case, 'dapa' simple 
+programmer and 'uisp' tool were used. 
+
+'dapa' is simple enough to be created manually, it's schema can be found in 
+documentation. The only problem with it is that it requires old-fashioned LPT 
+port.

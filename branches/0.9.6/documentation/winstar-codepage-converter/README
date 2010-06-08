@@ -1,0 +1,8 @@
+In this direcory exists a Python program, that generates C code for use in 
+"locale.c" by keyboard-typed strings. 
+
+A process of localising the device for some language would consist of:
+1) coding letter-code links in the script;
+2) fixing project locale system a bit;
+3) typing-copypasting to locale.c new strings.
+
