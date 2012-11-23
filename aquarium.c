@@ -29,14 +29,14 @@
 /**
  * Let the device be clcoked by 1MHz frequency
  */
-  
-/** 
+
+/**
  * ATMega16L fuses dump from a working instance follows:
- * 
- * 
+ *
+ *
  * # uisp -dprog=dapa --rd_fuses
  * Atmel AVR ATmega16 is found.
- * 
+ *
  * Fuse Low Byte      = 0xa1
  * Fuse High Byte     = 0xd9
  * Fuse Extended Byte = 0xff
@@ -48,7 +48,7 @@
  *     BLB01 -> 1
  *       LB2 -> 1
  *       LB1 -> 1
- * 
+ *
  * Programming fuses is to be done at the time of uploading firmware.
  */
 
@@ -77,7 +77,7 @@ void set_avg_temp_invalid(void);
 void eeprom_backup_or_restore_configs(char,char);
 /*--Prototypes--*/
 
-/** 
+/**
  * 9 byte buffer for text to be put to when drawing things on LCD.
  * This occupies these 9 bytes statically.
  **/
@@ -88,7 +88,7 @@ char str[9];
 /*################*/
 /*Buttons section*/
 
-/*Prototypes of event dispatchers, 
+/*Prototypes of event dispatchers,
 that will be called from interruption
 thread, if the respetife button press
 detected. These are executed within "sei"
@@ -103,7 +103,7 @@ void button3_pressed(void);
 Port	ButtonN
 ---------------
 PD7			0
-PD4			1		
+PD4			1
 PD5			2
 PD6			3
 ---------------
@@ -115,7 +115,7 @@ things from their defaults when starting.
 */
 
 /**
- * Reads values from three buttons, 
+ * Reads values from three buttons,
  * saving them as bits, starting from lower, and
  * returns one byte with the data.
  **/
@@ -123,12 +123,12 @@ char get_button_levels(void){
 	char val=PIND;
 	/*return 	((val&bits(0,0,0,1,0,0,0,0))>>4)  +
 			((val&bits(1,1,0,0,0,0,0,0))>>5)  ;*/
-	return	((val&bits(1,0,0,0,0,0,0,0))>>7) + 
+	return	((val&bits(1,0,0,0,0,0,0,0))>>7) +
 	((val&bits(0,1,1,1,0,0,0,0))>>3);
 }
 
 /**
- * Disables button interrupt, thus disabling all buttons. 
+ * Disables button interrupt, thus disabling all buttons.
  * Useful while there is no AC power.
  */
 void disable_buttons(void){
@@ -164,9 +164,9 @@ volatile char button_state=0;
 ISR(INT0_vect){
 	if (button_state/*!=0*/){
 		/*Secondary calls, just doing nothing
-		to flush secondary interruptions*/ 		
+		to flush secondary interruptions*/
 	}else{
-		/*first run*/		
+		/*first run*/
 		button_state=8;/*not default*/
 		asm("sei");/*enabling interrupts to make all
 		other button noise interrupts be flushed*/
@@ -178,20 +178,20 @@ ISR(INT0_vect){
 		levels[0]=get_button_levels();
 		sleep_millis(BTNNOISEREDCTMILLIS/4);
 		levels[1]=get_button_levels();
-		sleep_millis(BTNNOISEREDCTMILLIS/4);		
+		sleep_millis(BTNNOISEREDCTMILLIS/4);
 		levels[2]=get_button_levels();
-		sleep_millis(BTNNOISEREDCTMILLIS/4);				
+		sleep_millis(BTNNOISEREDCTMILLIS/4);
 		/*What have we got?*/
-		char l=levels[0]&levels[1]&levels[2];/*If a button is not well-pressed, 
+		char l=levels[0]&levels[1]&levels[2];/*If a button is not well-pressed,
 											the user might have done it by mistake*/
 		/*Calling event dispatchers from within interruption ~thread (it can't be called thread strictly)*/
 		if(l&1)button0_pressed();
 		if(l&2)button1_pressed();
-		if(l&4)button2_pressed();		
-		if(l&8)button3_pressed();	
+		if(l&4)button2_pressed();
+		if(l&8)button3_pressed();
 		/*Returning button state to zero, so that next interrupt occurings won't be flushed any more*/
-		asm("cli");/*disabling interruptions*/		
-		button_state=0;		
+		asm("cli");/*disabling interruptions*/
+		button_state=0;
 	}
 }
 
@@ -245,7 +245,7 @@ volatile char hours=12;
 void hours_up(void){
 	hours+=1;
 	if (hours>=24){
-		hours=0;		
+		hours=0;
 	}
 }
 
@@ -274,8 +274,8 @@ ISR(TIMER2_OVF_vect){
 }
 
 /**
- * The method accurately copies current time to the given 
- * locatin. The method is ~thread-safe, is supposed to be called 
+ * The method accurately copies current time to the given
+ * locatin. The method is ~thread-safe, is supposed to be called
  * from main loop and uses interruption disable.
  * The method leaves interrupts enabled.
  * @param o_hours, o_minutes, o_seconds - places to put answer to
@@ -284,8 +284,8 @@ void get_time(char* o_hours, char* o_minutes, char* o_seconds){
 	asm("cli");/*Disabling interrupts*/
 	*o_hours=hours;
 	*o_minutes=minutes;
-	*o_seconds=seconds; /*cli and sei used so that during copyind no 
-	interrupts would happen and change some values, what would bring 
+	*o_seconds=seconds; /*cli and sei used so that during copyind no
+	interrupts would happen and change some values, what would bring
 	mess*/
 	asm("sei");/*Enabling interrupts*/
 }
@@ -356,12 +356,12 @@ void set_avg_temp_invalid(){
 
 /**
  * The function evolve User Interface by given logical button states
- * and makes a proper LCD output, that depends on current internal UI 
- * state. It shall be called every time, even if no buttons have been 
+ * and makes a proper LCD output, that depends on current internal UI
+ * state. It shall be called every time, even if no buttons have been
  * detected to be pressed.
  * The method may leave interrupts enabled, or change nothing regarding
  * interrupts.
- * @param up,down,change0,change1 - booleans, identifying, if the 
+ * @param up,down,change0,change1 - booleans, identifying, if the
  *        respective buttons have been pressed
  */
 void werde(char up, char down, char change0, char change1){
@@ -385,8 +385,8 @@ void werde(char up, char down, char change0, char change1){
 		}
 		if(change1){
 			ui_state=ui_changesec;
-		}							
-		break;		
+		}
+		break;
 	case ui_changesec:
 		if(up|down){
 			asm("cli");
@@ -460,7 +460,7 @@ void werde(char up, char down, char change0, char change1){
 	case ui_changetemp:/*reminding: temperature is stored in (real value)*2 integer*/
 		if(up){
 			temp[changehour]+=1;
-			if (temp[changehour]>40*2){/*more is going to look like a fish soup :]*/					
+			if (temp[changehour]>40*2){/*more is going to look like a fish soup :]*/
 				temp[changehour]=20*2;
 			}
 		}
@@ -468,7 +468,7 @@ void werde(char up, char down, char change0, char change1){
 			temp[changehour]-=1;
 			if (temp[changehour]<10*2){
 				temp[changehour]=20*2;
-			}					
+			}
 		}
 		if(change0){
 			changehour+=1;
@@ -478,7 +478,7 @@ void werde(char up, char down, char change0, char change1){
 		}
 		if(change1){
 			ui_state=ui_changelight;
-		}			
+		}
 		break;
 	case ui_changelight:
 		if(up|down){
@@ -495,14 +495,14 @@ void werde(char up, char down, char change0, char change1){
 		if(change1){
 			ui_state=ui_changelang;
 		}
-		break;	
+		break;
 	case ui_changelang:
 		if(up|down){/*user wanted to change something here*/
 			rotate_lang(&lang);/*Changes one to the other*/
 		}
 		if(change1){
 			ui_state=ui_showfirmware;
-		}				
+		}
 		break;
 	case ui_showfirmware:
 		if(change1){
@@ -513,10 +513,10 @@ void werde(char up, char down, char change0, char change1){
 	/*LCD drawing switchm draws appropriate things, depending on ui state*/
 	switch(ui_state){
 		char h,m,s;/*hours,minutes,seconds to get*/
-	case ui_default:{						
+	case ui_default:{
 			clr_lcd();/*Clearing LCD*/
 			get_time(&h,&m,&s);/*carefully getting time, preventing collisions with time updating interrupt responce (see function description)*/
-			lcd_time_print(h,m,s,0);/*0 - upper line*/			
+			lcd_time_print(h,m,s,0);/*0 - upper line*/
 			if(temp_meas_error){
 				text(str, TEXT_oshibka, lang);
 				lcd_print(0x40,str);
@@ -537,28 +537,28 @@ void werde(char up, char down, char change0, char change1){
 					tempsymbol=13*16+10; /*arrow down*/
 				}else{
 					tempsymbol=15*16+4;/*just a nice symbol :)*/
-				}				
+				}
 				lcd_put_char(0x44,lampsymbol);
 				lcd_put_char(0x45,tempsymbol);
 				lcd_print_positive_temp_more_than_10_less_than_100(0x40, avg_temp);/*this occupies 4 positions (see function description)*/
 			}
 		}
 		break;
-	case ui_changesec:{				
+	case ui_changesec:{
 			get_time(&h,&m,&s);
 			lcd_time_print(h,m,s,0);
 			text(str,TEXT_izmsec, lang);
 			lcd_print(0x40,str);
 		}
 		break;
-	case ui_changemin:{				
+	case ui_changemin:{
 			get_time(&h,&m,&s);
 			lcd_time_print(h,m,s,0);
 			text(str, TEXT_izmmin, lang);
 			lcd_print(0x40,str);
 		}
 		break;
-	case ui_changehr:{				
+	case ui_changehr:{
 			get_time(&h,&m,&s);
 			lcd_time_print(h,m,s,0);
 			text(str, TEXT_izmhr, lang);
@@ -582,7 +582,7 @@ void werde(char up, char down, char change0, char change1){
 	case ui_changelight:{
 			clr_lcd();/*Clearing LCD*/
 			text(str, TEXT_lightchas, lang);
-			lcd_print(0,str);			
+			lcd_print(0,str);
 			int byte=changehour/8;
 			int pos=changehour%8;
 			if(lightdata[byte]&(1<<pos)){
@@ -639,9 +639,9 @@ void werde(char up, char down, char change0, char change1){
 	}else{
 		beepoff();
 	}
-	
-	/*LCD reinitializator (This is a hack - it is needed because the 
-	*piece of hardware - LCD, attached to the only device, present at 
+
+	/*LCD reinitializator (This is a hack - it is needed because the
+	*piece of hardware - LCD, attached to the only device, present at
 	*the moment (14.08.2009), happen to get nuts upon AC disturbances).*/
 	lcd_reinit_counter+=1;
 	if(lcd_reinit_period==lcd_reinit_counter){
@@ -669,11 +669,11 @@ void werde(char up, char down, char change0, char change1){
 
 #define STATE_NEED_TO_START_CONVERSION 0
 #define STATE_TEMP_CONVERTING 1
-/*State 0 means, that we need to ask termometer measure temperature to 
+/*State 0 means, that we need to ask termometer measure temperature to
 download it's value. If an error occurs, state is set to this one, because
 we have lost the track of thermometer states .An example, justifying this
-design, is a situation, when thermometer is physically unplugged, 
-while measuring temperature. Any temperature value, if one has been 
+design, is a situation, when thermometer is physically unplugged,
+while measuring temperature. Any temperature value, if one has been
 measured, is lost in this case.
 
 State 1 means, that we have asked termometer to measure temperature,
@@ -685,7 +685,7 @@ char thermo_state=STATE_NEED_TO_START_CONVERSION;/*set to zero at ATmega reset/s
  * Unlike it's low-level analog get_temperature(),
  * nothing except this method is needed to call to acquire temperature value.
  * This method reports a temperature value, if one is ready for yielding.
- * If it is not, the method starts temperature yielding process and returns 
+ * If it is not, the method starts temperature yielding process and returns
  * special return code, signalizing that the user should come later to check the value.
  *
  * @param	*come_later - set to not 0, if the user need to check the temperature later,
@@ -694,8 +694,8 @@ char thermo_state=STATE_NEED_TO_START_CONVERSION;/*set to zero at ATmega reset/s
  * @return 0 if OK,
  *           1,2,3,4,... on hardware errors.
  *
- * If return code is not null, other values are undefined, 
- * otherwise if come_later is not null, t undefined, 
+ * If return code is not null, other values are undefined,
+ * otherwise if come_later is not null, t undefined,
  * otherwise t is set.
  *
  */
@@ -706,7 +706,7 @@ char thermo_get_temperature(char* come_later, char* t){
 	char t_;
 	switch(thermo_state){
 		case(STATE_NEED_TO_START_CONVERSION):/*We have some old value, need to start getting a new one*/
-		r=ask_termometer_start_temperature_conversion();	
+		r=ask_termometer_start_temperature_conversion();
 		if(r){
 			/*errors :(*/
 			return r;
@@ -715,11 +715,11 @@ char thermo_get_temperature(char* come_later, char* t){
 			thermo_state=STATE_TEMP_CONVERTING;
 			return 0;
 		}
-		case(STATE_TEMP_CONVERTING):/*we have asked getting a new temp value, 
+		case(STATE_TEMP_CONVERTING):/*we have asked getting a new temp value,
 									but we don't know, if we are ready*/
 		r=get_term_control_register(&c);/*getting termometer control register*/
 		if(r){
-			thermo_state=STATE_NEED_TO_START_CONVERSION;				
+			thermo_state=STATE_NEED_TO_START_CONVERSION;
 			return r;/*trouble*/
 		}
 		if(!(c&bits(1,0,0,0,0,0,0,0))){
@@ -740,7 +740,7 @@ char thermo_get_temperature(char* come_later, char* t){
 			/*value read and now obsolete*/
 			thermo_state=STATE_NEED_TO_START_CONVERSION;
 			return 0;
-		}				
+		}
 	}
 	thermo_state=STATE_NEED_TO_START_CONVERSION;
 	return 0xff;/*0_o who could have written something strange to thermo_state*/
@@ -757,25 +757,25 @@ char thermo_get_temperature(char* come_later, char* t){
  * This section contains functions and variables, designed
  * to cope with a situation, of AC power going down. The schema
  * of the device has a reserve power source, 3x1.5V
- * battery, that will provide power for some time 
- * (70ma*h battery - about 2 days at 3 ma). Our task is to try to 
+ * battery, that will provide power for some time
+ * (70ma*h battery - about 2 days at 3 ma). Our task is to try to
  * minimize power consumption during no-power period.
  **/
 
 /**
- * This variable is normally 1, meaning that we are 
- * running on AC power. As soon as we detect that the AC power has 
- * gone down, we set this variable to 0. When we detect the opposite, 
+ * This variable is normally 1, meaning that we are
+ * running on AC power. As soon as we detect that the AC power has
+ * gone down, we set this variable to 0. When we detect the opposite,
  * we set it back to 1. The following subsystem, that control power
- * state and switches the wariable. This variable is set and used from 
+ * state and switches the wariable. This variable is set and used from
  * main ~thread, not from interrupts: it need to be volatile not.
  **/
 char power_on = 0xff;
 
 
 /**
- * We have a MOSFET transistor with gate, connected directly to 
- * AC power adaptor out, source connected to GND, drain, 
+ * We have a MOSFET transistor with gate, connected directly to
+ * AC power adaptor out, source connected to GND, drain,
  * connected to PD0 and PD1 via 10K resistors. The device is good
  * for measuring power level. In addition, it isolates microcontroller
  * logics from power supply, as it would be, if we connected PD0
@@ -794,16 +794,16 @@ char is_on_external_power(void){
 
 
 /**
- * Power-controlling state-machine has three main group states (excluding 
+ * Power-controlling state-machine has three main group states (excluding
  * countd-down substates):
- */ 
+ */
 enum power_manager_state {
 	PMS_OFF, /* No power */
 	PMS_ON, /* Power */
 	PMS_COUNTDOWN /* Power came reecntly, waiting */
 };
 
-/** 
+/**
  * Power manager behaves like a state machine. It issues commands after
  * each pass, here they are:
  */
@@ -815,24 +815,24 @@ enum power_manager_command {
 
 
 /**
- * When external power returns, it's unwise to resume operation immediately. 
- * So, let's wait this number of cycles before wake-up. 
- */ 
+ * When external power returns, it's unwise to resume operation immediately.
+ * So, let's wait this number of cycles before wake-up.
+ */
 #define POWERON_DELAY 10 /* less than 255 since 'char' is used to store the counter */
-/** 
+/**
  * Power manager state machine states
  */
 enum power_manager_state pms = PMS_ON;
 /**
  * This variable is set to POWERON_DELAY, when loosing power, and counted
- * down to zero before returning to normal operation after power comes 
+ * down to zero before returning to normal operation after power comes
  * back.
  */
 char poweron_delay_cycles_left;
 
 /**
  * This function implements power_manager state machine
- * It uses 'pms', 'poweron_delay_cycles' global variables as state 
+ * It uses 'pms', 'poweron_delay_cycles' global variables as state
  * machine state
  * @param power_on - external power on or off (boolean)
  * @return command of power management
@@ -864,38 +864,38 @@ enum power_manager_command power_manager_werde(char ext_power){
 				/* Power went away when counting down :( */
 				pms = PMS_OFF;
 			}
-		break;		
+		break;
 	}
-	return command; 
+	return command;
 }
 
 
-/** 
- * The method checks whether we are running on external power or not, 
+/**
+ * The method checks whether we are running on external power or not,
  * and takes appropriate actions.
  * It s supposed to be called from main loop (in main() method).
  */
 void check_ac_power(void){
-	char ext_power = is_on_external_power();	
+	char ext_power = is_on_external_power();
 	/* Asking power manager state machine what to do */
-	enum power_manager_command command = 
+	enum power_manager_command command =
 		power_manager_werde( ext_power );
 	/* Doing it */
-	if(PMC_SUSPEND == command){		
-		thermo_state=STATE_NEED_TO_START_CONVERSION;/*After the power comes back, the last 
+	if(PMC_SUSPEND == command){
+		thermo_state=STATE_NEED_TO_START_CONVERSION;/*After the power comes back, the last
 		termometer reading will be obsolete.*/
 		temperature_studying_reset();/*resetting temperature measurements collector, because
 		collected values may be obsolete, as power comes back*/
 		set_avg_temp_invalid();/*don't display old temperature info*/
-		/*Disabling heater, ventillator and lamp - we don't know, when the power will be back, 
-		and what states the devicess will need to have. If we don't do this, the devces will turn on 
+		/*Disabling heater, ventillator and lamp - we don't know, when the power will be back,
+		and what states the devicess will need to have. If we don't do this, the devces will turn on
 		just after the power comes back and stay so, until enough temperature measurements will have been collected.*/
 		relay(LAMP,0);
 		relay(HEATER,0);
-		relay(VENTILATOR,0);			
+		relay(VENTILATOR,0);
 		ledoff();
 		beepoff();
-		lcd_light(0);		
+		lcd_light(0);
 		MCUCR=(MCUCR|bits(0,0,1,1,0,0,0,0))&bits(0,1,1,1,1,1,1,1);/*setting a deep sleep mode (see ATmel manual)*/
 		power_on = 0;
 	}else if(PMC_RESUME == command){
@@ -917,7 +917,7 @@ void check_ac_power(void){
  * @param
  *			n - processed integer
  *			by - number from {10,100,1000,10000...}
- * @return 
+ * @return
  *			processed number
  */
 long round_and_remove_zeroes(long n,long by){
@@ -937,7 +937,7 @@ by providing means of calculating average measurement*/
 #define T_N 32
 char measurements[T_N]; /*array, that will hold the values*/
 unsigned char next_empty=0;/*cells 0..next_empty-1 hold valid experimental values*/
-unsigned char valid[4]; /*Bits of this array identify, whether the 
+unsigned char valid[4]; /*Bits of this array identify, whether the
 mesaurement has been correct. The array have 32 bits, enough for T_N=32*/
 /**
  * Looks into 'valid' array and returns boolean value of the requested bit.
@@ -947,7 +947,7 @@ mesaurement has been correct. The array have 32 bits, enough for T_N=32*/
 char is_valid(char n_bit){
 	unsigned char byte_offset = n_bit/8;
 	unsigned char local_bit_offset=n_bit % 8;
-	return valid[byte_offset] & (1<<local_bit_offset);/*masked properly*/	
+	return valid[byte_offset] & (1<<local_bit_offset);/*masked properly*/
 }
 
 /**
@@ -964,7 +964,7 @@ void set_valid(char val, char n_bit){
 		valid[byte_offset]&=~(1<<local_bit_offset);
 	}
 }
-	
+
 
 /*if there have been more than T_ERR faulty experimental results, the whole serie is invalid*/
 #define T_ERR 4
@@ -978,23 +978,23 @@ void temperature_studying_reset(void){
 
 /**
  * Appends an experimental value to values heap
- * @param in_value - new termperature reading (must be from 5C to 45 C, 
+ * @param in_value - new termperature reading (must be from 5C to 45 C,
  * 		otherwise, this is believed to be an error, because we are buisy with
  * 		an aquarium)
- * @param inc_valid - if the measurement has been valid or not 
+ * @param inc_valid - if the measurement has been valid or not
  * 		(if not, in_value may be random)
  *
  * @return
  *		 0 - experimental data loaded, awaiting more
- *		 1 - experimental data now enough, the value can't be added		 
+ *		 1 - experimental data now enough, the value can't be added
  */
-char t_stud_next(char in_value, char inc_valid){	
-	if(T_N==next_empty){/*enough data stored*/		
-		return 1;				
+char t_stud_next(char in_value, char inc_valid){
+	if(T_N==next_empty){/*enough data stored*/
+		return 1;
 	}else{/*need more data*/
 		if(inc_valid){
 			if((in_value<=40*2)&&(in_value>=5*2)){
-				measurements[next_empty]=in_value;				
+				measurements[next_empty]=in_value;
 				set_valid(1,next_empty);
 			}else{/*suspicious reading*/
 				set_valid(0,next_empty);
@@ -1004,14 +1004,14 @@ char t_stud_next(char in_value, char inc_valid){
 		}
 		next_empty+=1;
 		return 0;
-	}			
+	}
 }
 
 /**
  * Yields average, if it is ready. After yielding, resets the structures.
  * @param *t - output temperature
- * @param *fault - whether or not the whole serie has been correct 
- * 		(disconnected termometer is supposed to lead to an incorrect 
+ * @param *fault - whether or not the whole serie has been correct
+ * 		(disconnected termometer is supposed to lead to an incorrect
  * 		serie yielding)
  * @return 	0 - result yielded
  *			1 - need more data (t and fault undefined)
@@ -1038,7 +1038,7 @@ char t_get_average(char* t, char* fault){
 		}
 		*t=(char)round_and_remove_zeroes(1000*(summ)/(T_N-faulty_counter),1000);
 		*fault=0;
-		return 0;		
+		return 0;
 	}
 }
 
@@ -1049,13 +1049,13 @@ char t_get_average(char* t, char* fault){
 
 
 /**
- * Back-ups/restores temperature, light configurations and language 
- * global variables to/from EEPROM. 
- * 
- * @param direction: 0 - save to EEPROM, 
+ * Back-ups/restores temperature, light configurations and language
+ * global variables to/from EEPROM.
+ *
+ * @param direction: 0 - save to EEPROM,
  *					any other - load data from EEPROM.
- * @param interr: after completion interrupts shall be left true - enabled, false - disabled. 
- **/ 
+ * @param interr: after completion interrupts shall be left true - enabled, false - disabled.
+ **/
 void eeprom_backup_or_restore_configs(char direction, char interr){
 	asm("cli");
 	/*
@@ -1070,7 +1070,7 @@ void eeprom_backup_or_restore_configs(char direction, char interr){
 		for(ksi=0;ksi<3;ksi++){
 			lightdata[ksi]=EEPROM_read(addr);
 			addr+=1;
-		}		
+		}
 		for(ksi=0;ksi<24;ksi++){
 			char val=EEPROM_read(addr);
 			if((val>40*2)||(val<10*2)){
@@ -1088,8 +1088,8 @@ void eeprom_backup_or_restore_configs(char direction, char interr){
 		}else{
 			/*Some garbage in EEPROM*/
 			lang=0;/*We have one language, at least*/
-		}			
-		/*addr+=1*/		
+		}
+		/*addr+=1*/
 	}else{
 		/*back up to EEPROM*/
 		unsigned int addr=0;/*next empty address*/
@@ -1103,7 +1103,7 @@ void eeprom_backup_or_restore_configs(char direction, char interr){
 			char val=EEPROM_read(addr);
 			if(val!=temp[ksi])EEPROM_write(addr,temp[ksi]);
 			addr+=1;
-		}	
+		}
 		/*saving locale*/
 		char lang_e=EEPROM_read(addr);
 		if(lang!=lang_e){/*if value there differs...*/
@@ -1112,7 +1112,7 @@ void eeprom_backup_or_restore_configs(char direction, char interr){
 		/*addr+=1*/
 	}
 
-	if(interr){/* Depending on where we have been asked to leave interrupts 
+	if(interr){/* Depending on where we have been asked to leave interrupts
 				* enabled or not */
 		asm("sei");
 	}
@@ -1130,7 +1130,7 @@ void eeprom_backup_or_restore_configs(char direction, char interr){
 void switch_external_devices(void){
 	char h,m,s; /*hours, minutes and seconds*/
 	get_time(&h,&m,&s);
-	
+
 	if(lightdata[h/8]&(1<<(h%8))){
 		relay(LAMP,1);
 	}else{
@@ -1145,13 +1145,13 @@ void switch_external_devices(void){
 			temp_meas_error=1;/*Let UI warn people around about this trouble*/
 			relay(HEATER,0);
 			relay(VENTILATOR,0);
-		}else{/*Temperature yielded*/				
+		}else{/*Temperature yielded*/
 			avg_temp=t;
 			avg_temp_invalid=0;
 			temp_meas_error=0;
 			{/*switching relays*/
-				unsigned char h_ind=(unsigned char)h;/*hours now, cast is made to keep gcc happy*/			
-				if  (temp[h_ind]==t){      
+				unsigned char h_ind=(unsigned char)h;/*hours now, cast is made to keep gcc happy*/
+				if  (temp[h_ind]==t){
 					/*Temperature OK*/
 					relay(HEATER,0);
 					relay(VENTILATOR,0);
@@ -1177,14 +1177,14 @@ void switch_external_devices(void){
 				}else if(temp[h_ind]-1>t){
 					relay(HEATER,1);
 					relay(VENTILATOR,0);
-				}				
+				}
 			}/*switching relays*/
 		}
-		
+
 	}
-	/*termometer - obtaining a new value section*/	
+	/*termometer - obtaining a new value section*/
 	/*we don't worry about adding to full t_stud_next, because if it were full, it would be emptied in the section before (and we have overflow protection in t_stud_next)*/
-	char come_later;	
+	char come_later;
 	char retc=thermo_get_temperature(&come_later,&t);
 	if(retc){
 		t_stud_next(0,0);/*0_o some error*/
@@ -1201,8 +1201,8 @@ void switch_external_devices(void){
 * Perform some microcontroller setups. Called at microcontroller setup.
 * This is an Ancient method. It was created just after main().
 */
-void configure_mu(void){		
-	MCUCR|=(3<<ISC00);/*rising edge triggers 0 interruption*/	
+void configure_mu(void){
+	MCUCR|=(3<<ISC00);/*rising edge triggers 0 interruption*/
 	GICR|=1<<INT0;/*enabling 0 interrupt*/
 
 	MCUCR|=1<<SE;/*Enabling sleep by setting sleepy bit*/
@@ -1212,41 +1212,41 @@ void configure_mu(void){
 
 	/*setting timer_counter 2, in compliance with ATmel manual (setting ATmega to
 	work in asynchronous mode section)*/
-	TIMSK&=bits(0,0,1,1,1,1,1,1);/*clearing interrupts enable flags 
+	TIMSK&=bits(0,0,1,1,1,1,1,1);/*clearing interrupts enable flags
 	(not to trigger them occasionally, while configuring the counter).*/
 	ASSR|=1<<AS2;/*setting asynchronious operation mode*/
 	TCNT2=0x00;
 	OCR2=0x00;
-	TCCR2=bits(0,0,0,0,0,1,0,1);/*count up to 0xff value; OC2 pin works normal, as port; divide clock by 128*/	
+	TCCR2=bits(0,0,0,0,0,1,0,1);/*count up to 0xff value; OC2 pin works normal, as port; divide clock by 128*/
 	while(ASSR&((1<<TCR2UB)+(1<<OCR2UB)+(1<<TCN2UB))){/*do nothing*/};/*wait until these become zero - counter is not busy*/
 	TIFR&=bits(0,0,1,1,1,1,1,1);/*clearing interrupt flags*/
-	TIMSK=(bits(0,0,1,1,1,1,1,1)&TIMSK)+(1<<TOIE2);/*enabling overflow interruption*/	
+	TIMSK=(bits(0,0,1,1,1,1,1,1)&TIMSK)+(1<<TOIE2);/*enabling overflow interruption*/
 
 	/*DDRA configuerd in initialize_lcd()*/
 	DDRB=bits(0,0,0,1,1,1,1,1);
 	DDRD=bits(0,0,0,0,0,0,1,0);/*PORTD 1 is an output, used to power the device, measuring the presence of external AC power*/
 	DDRC=1<<2;/*LED blinker*/
-	/*The whole PORTD is configured for inut*/	
+	/*The whole PORTD is configured for inut*/
 
-	/*configuring Watchdog 
+	/*configuring Watchdog
 
 	/-\
 	|
 	\=-----^^00__
 		/////       D
-	| ///  ---^^ 
+	| ///  ---^^
 	II  II
 	*/
-	WDTCR=bits(0,0,0,0,1,1,1,1);/*a bit more that 2 seconds of dog tolerance*/							
+	WDTCR=bits(0,0,0,0,1,1,1,1);/*a bit more that 2 seconds of dog tolerance*/
 }
 
 
 
 
 
-int main(void){	
-	configure_mu();	/*setting up 
-					*some microcontroller features*/	
+int main(void){
+	configure_mu();	/*setting up
+					*some microcontroller features*/
 	initialize_lcd();/*setting up LCD*/
 	{
 		char k;
@@ -1258,12 +1258,12 @@ int main(void){
 			asm("wdr");
 		}
 	}
-	eeprom_backup_or_restore_configs(0xff,0);/*load temp and lightdata from EEPROM, leaving interrupts disabled*/	
+	eeprom_backup_or_restore_configs(0xff,0);/*load temp and lightdata from EEPROM, leaving interrupts disabled*/
 	{
 		char lang_displaying_thermometer_absence=lang/*copying*/;
-		while(check_termo_configs()){/*ensuring that termometr is properly configured, 
+		while(check_termo_configs()){/*ensuring that termometr is properly configured,
 			this only returns not zeros, if it can't fix termometer itself*/
-			asm("wdr");			
+			asm("wdr");
 			clr_lcd();/*Clearing screen*/
 			text(str, TEXT_waitforter, lang_displaying_thermometer_absence);
 			lcd_print(0,str);
@@ -1273,16 +1273,16 @@ int main(void){
 			sleep_millis(1500);/*stops to display info*/
 		}
 	}
-	asm("sei");	
-	asm("wdr");/*resetting watchdog*/		
+	asm("sei");
+	asm("wdr");/*resetting watchdog*/
 	/*This is the main loop. This thread executes in "sei" mode, except
 	little patches, where interruptions are disabled*/
 	for(;;){
 		check_ac_power();/*look on Ualpha level, look, if it used to change before, if it's now OK, set power_on variable, restart LCD, if necessary.*/
 		if(power_on){/*If there is no power, we must not do anything. Just react to the only enabled interruption - every-second clock
 						from the asynchronous timer with a 32768Hz quartz attached*/
-			ledon();/*light on*/			
-			switch_external_devices();/*issue commands to relays, most time-consuming (because of TWI termometer)*/		
+			ledon();/*light on*/
+			switch_external_devices();/*issue commands to relays, most time-consuming (because of TWI termometer)*/
 			char cf0,cf1,cf2,cf3;
 			asm("cli");
 			cf0=flag0;/*copying current flag values*/
@@ -1292,15 +1292,15 @@ int main(void){
 			flag0=0;
 			flag1=0;
 			flag2=0;
-			flag3=0;					
+			flag3=0;
 			asm("sei");
-			
+
 			werde(cf0,cf1,cf2,cf3);/*Change main interface states, depending on button data, and
-									 issue some commands depending on the state and input*/			
-			ledoff();			
-		}/*if power_on flag*/		
-		asm("sleep");/*sleeps, until timer overflow or button press, or both*/	
-		asm("wdr");/*resetting watchdog*/		
+									 issue some commands depending on the state and input*/
+			ledoff();
+		}/*if power_on flag*/
+		asm("sleep");/*sleeps, until timer overflow or button press, or both*/
+		asm("wdr");/*resetting watchdog*/
 	}/*main loop*/
 	return 0;/*never reached upon normal operation*/
 }
