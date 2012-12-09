@@ -4,9 +4,9 @@
  **/
 #define Ver0 0
 #define Ver1 9
-#define Ver2 6
+#define Ver2 7
 /**
- * Copyright (C) 2009, 2010  ZelinskiyIS.
+ * Copyright (C) 2009, 2010, 2012  ZelinskiyIS.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@
 #include "eeprom.h"			/*EEPROM I/O functions*/
 #include "locale.h"			/*Language and text related features*/
 #include "simpledevices.h"	/*relays, lamps*/
+#include "crc32.h"			/*crc32 engine*/
 
 
 
@@ -1045,9 +1046,26 @@ char t_get_average(char* t, char* fault){
 /*################################################*/
 
 
+#define DEFAULT_OK_TEMPERATURE (20*2) /*20 C*/
+/**
+ * Loads default good values into configurable state variables
+ **/
+void config_load_defaults(void){
+	/* light */
+	lightdata[0] = bits(0,0,0,0,0,0,0,0); /* 0-7 */
+	lightdata[1] = bits(1,1,1,1,1,1,0,0); /* 8-15 */
+	lightdata[2] = bits(0,0,1,1,1,1,1,1); /* 16-23 */
+	/* temperature */
+	unsigned char ksi;
+	for(ksi=0;ksi<24;ksi+=1){
+		temp[ksi] = DEFAULT_OK_TEMPERATURE;
+	}
+	/* language */
+	lang = 0;
+}
 
 
-
+#define CRC32_POLYNOMIAL 0x04C11DB7
 /**
  * Back-ups/restores temperature, light configurations and language
  * global variables to/from EEPROM.
@@ -1058,50 +1076,68 @@ char t_get_average(char* t, char* fault){
  **/
 void eeprom_backup_or_restore_configs(char direction, char interr){
 	asm("cli");
-	/*
-	char temp		[24	];
-	char lightdata	[3	];
-	That's what we need to backup/restore (they are declared as global in UI section).
-	*/
+	struct CRC32 crc;
+	crc32_init(&crc, CRC32_POLYNOMIAL);
 	if(direction){
 		/*restore from EEPROM*/
 		unsigned int addr=0;/*next empty address*/
-		unsigned int ksi;
+		unsigned char ksi;
+		/* light */
 		for(ksi=0;ksi<3;ksi++){
-			lightdata[ksi]=EEPROM_read(addr);
+			unsigned char c = EEPROM_read(addr);
+			crc32_update(&crc, c);
+			lightdata[ksi]=c;
 			addr+=1;
 		}
+		/* temperature */
 		for(ksi=0;ksi<24;ksi++){
 			char val=EEPROM_read(addr);
 			if((val>40*2)||(val<10*2)){
 				/*We've just read something strange from EEPROM. (May be it's too old and beaten and can't store data?? Or there is just some random data in the place.)*/
-				temp[ksi]=20*2;/*20 C*/
+				temp[ksi]=DEFAULT_OK_TEMPERATURE;
 			}else{
 				temp[ksi]=val;
 			}
+			crc32_update(&crc, val);
 			addr+=1;
 		}
-		/*restoring locale*/
+		/* locale */
 		unsigned char lang_e = EEPROM_read(addr);
+		addr+=1;
+		crc32_update(&crc, lang_e);
 		if(lang_e<NUM_OF_LANG){/*That's a good value*/
 			lang=lang_e;
 		}else{
 			/*Some garbage in EEPROM*/
-			lang=0;/*We have one language, at least*/
+			lang=0;
 		}
-		/*addr+=1*/
+		/* crc32 */
+		for(ksi=0;ksi<4;ksi+=1){
+			unsigned char c = EEPROM_read(addr);
+			addr += 1;
+			crc32_update(&crc, c);
+		}
+		if(!crc32_check_zero(&crc)){
+			/* bad crc! */
+			config_load_defaults();
+			eeprom_backup_or_restore_configs(0,0); /* saving the new OK values */
+		}
 	}else{
 		/*back up to EEPROM*/
 		unsigned int addr=0;/*next empty address*/
 		unsigned int ksi;
 		for(ksi=0;ksi<3;ksi++){
-			char val=EEPROM_read(addr);
-			if(val!=lightdata[ksi])EEPROM_write(addr,lightdata[ksi]);
+			char val = EEPROM_read(addr);
+			char nval = lightdata[ksi];
+			if(val!=nval)EEPROM_write(addr,nval);
+			crc32_update(&crc, nval);
 			addr+=1;
 		}
 		for(ksi=0;ksi<24;ksi++){
-			char val=EEPROM_read(addr);
-			if(val!=temp[ksi])EEPROM_write(addr,temp[ksi]);
+			char val = EEPROM_read(addr);
+			char nval = temp[ksi];
+			if(val!=nval)EEPROM_write(addr,nval);
+			crc32_update(&crc, nval);
 			addr+=1;
 		}
 		/*saving locale*/
@@ -1109,7 +1145,16 @@ void eeprom_backup_or_restore_configs(char direction, char interr){
 		if(lang!=lang_e){/*if value there differs...*/
 			EEPROM_write(addr,lang);
 		}
-		/*addr+=1*/
+		crc32_update(&crc, lang);
+		addr+=1;
+		/* saving crc32 */
+		crc32_finalize(&crc);
+		for(ksi=0;ksi<4;ksi+=1){
+			char val = EEPROM_read(addr);
+			char nval = crc32_get_reversed(&crc, ksi);
+			if(val!=nval)EEPROM_write(addr,nval); /* this might just save us some tiny EEPROM durability */
+			addr += 1;
+		}
 	}
 
 	if(interr){/* Depending on where we have been asked to leave interrupts
@@ -1248,33 +1293,39 @@ int main(void){
 	configure_mu();	/*setting up
 					*some microcontroller features*/
 	initialize_lcd();/*setting up LCD*/
-	{
-		char k;
-		for(k=0;k<20;k+=1){
-			beepon();
-			sleep_millis(50);
-			beepoff();
-			sleep_millis(50);
-			asm("wdr");
-		}
-	}
-	eeprom_backup_or_restore_configs(0xff,0);/*load temp and lightdata from EEPROM, leaving interrupts disabled*/
-	{
-		char lang_displaying_thermometer_absence=lang/*copying*/;
-		while(check_termo_configs()){/*ensuring that termometr is properly configured,
-			this only returns not zeros, if it can't fix termometer itself*/
-			asm("wdr");
-			clr_lcd();/*Clearing screen*/
-			text(str, TEXT_waitforter, lang_displaying_thermometer_absence);
+	beepon();
+	if(check_termo_configs()){
+		/* Could not initialize thermometer! */
+		/* Let's say something and go for reset */
+		clr_lcd();
+		char lng = LANG_RU;
+		while(1){
+			text(str, TEXT_waitforter, lng);
 			lcd_print(0,str);
-			text(str, TEXT_mometr, lang_displaying_thermometer_absence);
+			text(str, TEXT_mometr, lng);
 			lcd_print(0x40,str);
-			rotate_lang(&lang_displaying_thermometer_absence);/*So that error message is displayed in many languages*/
-			sleep_millis(1500);/*stops to display info*/
+			rotate_lang(&lng);
+			sleep_millis(400);
+		}
+		/* We will be biten by the watchdog now - the best solution */
+	}
+	eeprom_backup_or_restore_configs(1,0);/* load from EEPROM */
+	beepoff();
+	{
+		/* delay + melody =) */
+		unsigned int delay_left = 1000;
+		unsigned int delay_next = 200;
+		while(delay_left){
+			unsigned int delay = delay_next > delay_left ? delay_left : delay_next;
+			delay_left -= delay;
+			delay_next = delay_next * 7 / 8;
+			beepon();
+			sleep_millis(delay/2);
+			beepoff();
+			sleep_millis(delay/2);
 		}
 	}
 	asm("sei");
-	asm("wdr");/*resetting watchdog*/
 	/*This is the main loop. This thread executes in "sei" mode, except
 	little patches, where interruptions are disabled*/
 	for(;;){
@@ -1299,8 +1350,8 @@ int main(void){
 									 issue some commands depending on the state and input*/
 			ledoff();
 		}/*if power_on flag*/
-		asm("sleep");/*sleeps, until timer overflow or button press, or both*/
 		asm("wdr");/*resetting watchdog*/
+		asm("sleep");/*sleeps, until timer overflows or button is pressed, or both*/
 	}/*main loop*/
 	return 0;/*never reached upon normal operation*/
 }

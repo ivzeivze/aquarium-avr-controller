@@ -100,7 +100,7 @@ char set_term_control_register(char c);
  * Proper configs is to make only one temperature conversion
  * on demand.
  *
- * @return 0, in case all config are correct after calling this method
+ * @return 0, in case all configs are correct after calling this method
  *			(e.g. they have been correct before or were wrong, but now 
  *			have been fixed)
  *			not 0, in case some error occurs, that don't allow us make sure,

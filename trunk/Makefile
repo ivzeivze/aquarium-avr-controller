@@ -7,10 +7,10 @@ CFLAGS=-g -mmcu=$(MCU) -Wall -Wstrict-prototypes -Os -mcall-prologues
 all: aquarium.hex
 aquarium.hex : aquarium.out 
 	$(OBJCOPY) -R .eeprom -O ihex aquarium.out aquarium.hex 
-aquarium.out : aquarium.o display.o delays.o thermometer.o eeprom.o locale.o simpledevices.o
-	$(CC) $(CFLAGS) -o aquarium.out -Wl,-Map,aquarium.map aquarium.o display.o delays.o thermometer.o eeprom.o locale.o simpledevices.o
+aquarium.out : aquarium.o display.o delays.o thermometer.o eeprom.o locale.o simpledevices.o crc32.o
+	$(CC) $(CFLAGS) -o aquarium.out -Wl,-Map,aquarium.map aquarium.o display.o delays.o thermometer.o eeprom.o locale.o simpledevices.o crc32.o
 
-aquarium.o : aquarium.c bits.h delays.h display.h thermometer.h eeprom.h locale.h simpledevices.h 
+aquarium.o : aquarium.c bits.h delays.h display.h thermometer.h eeprom.h locale.h simpledevices.h crc32.h
 	$(CC) $(CFLAGS) -Os -c aquarium.c
 display.o : display.c display.h bits.h delays.h
 	$(CC) $(CFLAGS) -Os -c display.c
@@ -24,6 +24,8 @@ locale.o : locale.c locale.h
 	$(CC) $(CFLAGS) -Os -c locale.c
 simpledevices.o : simpledevices.c simpledevices.h
 	$(CC) $(CFLAGS) -Os -c simpledevices.c
+crc32.o : crc32.c crc32.h
+	$(CC) $(CFLAGS) -Os -c crc32.c
 # erase the AVR before it is programmed
 load: aquarium.hex
 	uisp -dlpt=/dev/parport0 --erase  -dprog=dapa
